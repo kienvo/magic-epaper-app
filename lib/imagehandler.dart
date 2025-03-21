@@ -1,15 +1,24 @@
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:ui' as ui;
 
 class ImageHandler {
 
   img.Image? image;
 
-  // TODO: load SVG
   Future<void> loadRaster(String assetPath) async {
     final imgBin = await rootBundle.load(assetPath);
     final Uint8List byteArray = imgBin.buffer.asUint8List();
     image = img.decodeImage(byteArray)!;
+  }
+
+  Future<void> loadSvg(String assetPath) async {
+    final rawSvg = await rootBundle.loadString(assetPath);
+    final PictureInfo pictureInfo = await vg.loadPicture(SvgStringLoader(rawSvg), null);
+    final image = await pictureInfo.picture.toImage(240, 416);
+    final png = await image.toByteData(format: ui.ImageByteFormat.png);
+    this.image = img.decodePng(png!.buffer.asUint8List());
   }
 
   Uint8List toEpdBitmap() {
